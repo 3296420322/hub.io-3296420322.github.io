@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>岛</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: 'rgb(0,0,0)',
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .circle-btn {
+                @apply w-24 h-24 rounded-full overflow-hidden flex items-center justify-center transition-all duration-300 cursor-pointer border-2 border-transparent;
+            }
+            .circle-btn-active {
+                @apply scale-110 border-white shadow-lg shadow-white/20;
+            }
+            .btn-image {
+                @apply w-full h-full object-cover transition-transform duration-500;
+            }
+            .circle-btn:hover .btn-image {
+                @apply scale-110;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark min-h-screen overflow-hidden flex items-center justify-center">
+    <div class="container mx-auto px-4 py-8 flex flex-col md:flex-row items-center gap-8 md:gap-16">
+        <!-- 左侧按钮区域 -->
+        <div class="flex flex-col items-center gap-8 md:gap-12 w-full md:w-1/4">
+            <button id="btn1" class="circle-btn">
+                <img src="木.png" alt="视频1" class="btn-image">
+            </button>
+            <button id="btn2" class="circle-btn">
+                <img src="火.png" alt="视频2" class="btn-image">
+            </button>
+            <button id="btn3" class="circle-btn">
+                <img src="水.png" alt="视频3" class="btn-image">
+            </button>
+            <button id="btn4" class="circle-btn">
+                <img src="云.png" alt="视频4" class="btn-image">
+            </button>
+            <button id="btn5" class="circle-btn">
+                <img src="石头.png" alt="视频5" class="btn-image">
+            </button>
+        </div>
+
+        <!-- 右侧视频播放区域 -->
+        <div class="w-full md:w-3/4 flex justify-center">
+            <div id="video-container" class="relative w-full max-w-4xl aspect-video bg-black/30 rounded-md overflow-hidden">
+                <!-- 视频将在这里动态加载 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 背景音乐 -->
+    <audio id="bgMusic" loop>
+        <source src="梦.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // 视频源数组，实际使用时请替换为真实视频URL
+        const videoSources = [
+            "木1.mp4",
+            "火1.mp4",
+            "水1.mp4",
+            "云1.mp4",
+            "石1.mp4"
+        ];
+
+        // 获取DOM元素
+        const videoContainer = document.getElementById('video-container');
+        const buttons = document.querySelectorAll('.circle-btn');
+        const bgMusic = document.getElementById('bgMusic');
+        let currentVideo = null;
+        let isMusicPlaying = false;
+
+        // 按钮点击事件处理
+        buttons.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                // 移除所有按钮的活动状态
+                buttons.forEach(b => b.classList.remove('circle-btn-active'));
+                // 添加当前按钮的活动状态
+                btn.classList.add('circle-btn-active');
+                
+                // 如果音乐还没播放，启动背景音乐
+                if (!isMusicPlaying) {
+                    playBackgroundMusic();
+                    isMusicPlaying = true;
+                }
+                
+                // 停止当前播放的视频
+                if (currentVideo) {
+                    currentVideo.pause();
+                    currentVideo.remove();
+                }
+                
+                // 清空视频容器
+                videoContainer.innerHTML = '';
+                
+                // 创建新视频元素
+                currentVideo = document.createElement('video');
+                currentVideo.src = videoSources[index];
+                currentVideo.autoplay = true;
+                currentVideo.loop = true;
+                currentVideo.muted = false; // 确保视频有声音
+                currentVideo.style.width = '100%';
+                currentVideo.style.height = '100%';
+                currentVideo.style.objectFit = 'cover';
+                
+                // 将视频添加到容器
+                videoContainer.appendChild(currentVideo);
+            });
+        });
+
+        // 播放背景音乐函数
+        function playBackgroundMusic() {
+            // 尝试播放背景音乐
+            bgMusic.volume = 0.3; // 设置音量为30%
+            bgMusic.play().catch(error => {
+                // 处理自动播放限制
+                console.log('自动播放失败:', error);
+                // 添加一个全局点击事件，以便用户交互后可以播放音乐
+                document.addEventListener('click', function startMusicAfterInteraction() {
+                    bgMusic.play().then(() => {
+                        isMusicPlaying = true;
+                        document.removeEventListener('click', startMusicAfterInteraction);
+                    }).catch(err => console.log('用户交互后播放仍失败:', err));
+                }, { once: true });
+            });
+        }
+
+        // 页面加载完成后尝试播放音乐
+        window.addEventListener('load', playBackgroundMusic);
+    </script>
+</body>
+</html>
+    
